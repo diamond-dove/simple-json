@@ -124,7 +124,7 @@ Without the where() method, it will update all rows
 Under the hood this package uses the `Jajo\JSONDB` package. You can get to the underlying writer that implements DiamondDove\SimpleJson\WriterInterface by calling the getWriter method.
 
 ```php
-$writer = SimpleExcelWriter::create($pathToCsv)->getWriter();
+$writer = SimpleExcelWriter::create($pathToJson)->getWriter();
 ```
 
 # Testing
