@@ -7,7 +7,7 @@ Here's an example on how to read a Json.
 ```php
 use DiamondDove\SimpleJson\SimpleJsonReader;
 
-SimpleJsonReader::create('/', 'users.json')->get()
+SimpleJsonReader::create('users.json')->get()
    ->each(function(array $user) {
         // process the row
     });
