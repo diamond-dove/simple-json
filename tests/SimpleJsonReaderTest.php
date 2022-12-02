@@ -2,7 +2,9 @@
 
 namespace DiamondDove\SimpleJson\Tests;
 
+use DiamondDove\SimpleJson\Exceptions\InvalidJsonException;
 use DiamondDove\SimpleJson\SimpleJsonReader;
+use Illuminate\Support\Collection;
 
 class SimpleJsonReaderTest extends TestCase
 {
@@ -20,6 +22,7 @@ class SimpleJsonReaderTest extends TestCase
 
     public function testCanGetUserEmptyFile()
     {
+        $this->expectException(InvalidJsonException::class);
         $this->assertEmpty((new SimpleJsonReader($this->getPath('emptyFile.json')))->get()->toArray());
     }
 
@@ -30,11 +33,22 @@ class SimpleJsonReaderTest extends TestCase
         $this->assertEquals($expectedText, $actual['statuses'][0]['text']);
     }
 
+    public function testCanGetLargeFileWhereIn()
+    {
+        $expectedText = 24012619984051000;
+        $actual = (new SimpleJsonReader($this->getPath('twitter_example_0.json')))
+            ->get()
+            ->where('search_metadata.since_id', $expectedText)
+            ->first();
+
+        $this->assertEquals($expectedText, $actual['search_metadata']['since_id']);
+    }
+
     public function testGetWhereName()
     {
         $expectedName = 'User 3';
         $user = $this->jsonReader->get()->where('name', '===', $expectedName)->first();
-        $this->assertNotEmpty($expectedName, $user['name']);
+        $this->assertEquals($expectedName, $user['name']);
     }
 
     public function testGetFile()

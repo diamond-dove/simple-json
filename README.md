@@ -62,13 +62,6 @@ return strlen($user['first_name']) > 5;
 });
 ```
 
-### Manually working with the reader object
-Under the hood this package uses the `Jajo\JSONDB` package. You can get to the underlying reader that implements `DiamondDove\SimpleJson\ReaderInterface` by calling the getReader method.
-
-```php
-$reader = SimpleJsonReader::Reader::create($pathToJson)->getReader();
-```
-
 ## Writing files
 Here's how you can write a JSON file:
 
@@ -119,13 +112,6 @@ SimpleJsonWriter::create($pathToJson)
 ```
 
 Without the where() method, it will update all rows
-
-### Manually working with the writer object
-Under the hood this package uses the `Jajo\JSONDB` package. You can get to the underlying writer that implements DiamondDove\SimpleJson\WriterInterface by calling the getWriter method.
-
-```php
-$writer = SimpleJsonWriter::create($pathToJson)->getWriter();
-```
 
 # Testing
 ```sh 

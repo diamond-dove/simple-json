@@ -8,7 +8,7 @@ use Illuminate\Support\LazyCollection;
 class SimpleJsonReader
 {
     use PathHandle;
-    protected ReaderInterface $reader;
+    protected SimpleJsonDB $reader;
     protected string $file;
 
     public static function create(string $path): self
@@ -27,20 +27,8 @@ class SimpleJsonReader
         return $this->file;
     }
 
-    public function getReader(): ReaderInterface
-    {
-        return $this->reader;
-    }
-
     public function get(): LazyCollection
     {
-        return LazyCollection::make(function () {
-                $items = $this->reader
-                    ->from($this->file)
-                    ->get();
-                foreach ($items as $item) {
-                    yield $item;
-                }
-        });
+        return $this->reader->get();
     }
 }

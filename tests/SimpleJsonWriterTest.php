@@ -11,7 +11,7 @@ class SimpleJsonWriterTest extends TestCase
     use MatchesSnapshots;
 
     private TemporaryDirectory $temporaryDirectory;
-    private string $pathToJson;
+    private string             $pathToJson;
 
     public function setUp(): void
     {
@@ -25,10 +25,10 @@ class SimpleJsonWriterTest extends TestCase
     public function testCanInsertRecords()
     {
         SimpleJsonWriter::create($this->pathToJson)
-        ->insert([
-            'first_name' => 'john',
-            'last_name' => 'Doe'
-        ]);
+                        ->insert([
+                            'first_name' => 'john',
+                            'last_name'  => 'Doe',
+                        ]);
 
         $this->assertMatchesFileSnapshot($this->pathToJson);
     }
@@ -37,14 +37,14 @@ class SimpleJsonWriterTest extends TestCase
     {
         SimpleJsonWriter::create($this->pathToJson)
                         ->insert([
-                                     'name' => 'Thomas',
-                                     'state' => 'Nigeria',
-                                     'age' => 22
-                       ])
+                            'name'  => 'Thomas',
+                            'state' => 'Nigeria',
+                            'age'   => 22,
+                        ])
                         ->insert([
-                         'name' => 'Luis',
-                         'state' => 'Nigeria',
-                         'age' => 32
+                            'name'  => 'Luis',
+                            'state' => 'Nigeria',
+                            'age'   => 32,
                         ]);
 
         $this->assertMatchesFileSnapshot($this->pathToJson);
@@ -54,17 +54,17 @@ class SimpleJsonWriterTest extends TestCase
     {
         SimpleJsonWriter::create($this->pathToJson)
                         ->insert([
-                                     'name' => 'Thomas',
-                                     'state' => 'Nigeria',
-                                     'age' => 22
-                                 ])
+                            'name'  => 'Thomas',
+                            'state' => 'Nigeria',
+                            'age'   => 22,
+                        ])
                         ->insert([
-                                     'name' => 'Luis',
-                                     'state' => 'Nigeria',
-                                     'age' => 32
-                                 ])
-                        ->where([ 'name' => 'Luis' ])
-                        ->update([ 'name' => 'Juan', 'age' => 28 ]);
+                            'name'  => 'Luis',
+                            'state' => 'Nigeria',
+                            'age'   => 32,
+                        ])
+                        ->where(['name' => 'Luis'])
+                        ->update(['name' => 'Juan', 'age' => 28]);
 
         $this->assertMatchesFileSnapshot($this->pathToJson);
     }
@@ -73,16 +73,16 @@ class SimpleJsonWriterTest extends TestCase
     {
         SimpleJsonWriter::create($this->pathToJson)
                         ->insert([
-                                     'name' => 'Thomas',
-                                     'state' => 'Nigeria',
-                                     'age' => 22
-                                 ])
+                            'name'  => 'Thomas',
+                            'state' => 'Nigeria',
+                            'age'   => 22,
+                        ])
                         ->insert([
-                                     'name' => 'Luis',
-                                     'state' => 'Nigeria',
-                                     'age' => 32
-                                 ])
-                        ->where([ 'name' => 'Luis' ])
+                            'name'  => 'Luis',
+                            'state' => 'Nigeria',
+                            'age'   => 32,
+                        ])
+                        ->where(['name' => 'Luis'])
                         ->delete();
 
         $this->assertMatchesFileSnapshot($this->pathToJson);

@@ -3,13 +3,13 @@
 namespace DiamondDove\SimpleJson;
 
 use DiamondDove\SimpleJson\Traits\PathHandle;
-use Jajo\JSONDB;
+use Illuminate\Support\LazyCollection;
 use Exception;
 
 class SimpleJsonDB implements ReaderInterface
 {
     use PathHandle;
-    protected JSONDB $jsonDB;
+    protected JsonDb $jsonDB;
     protected string $file;
     protected string $column;
     protected const INVALID_JSON_ERROR = 'json is invalid';
@@ -22,7 +22,7 @@ class SimpleJsonDB implements ReaderInterface
     public function __construct(string $path)
     {
         $dir = $this->getDirName($path);
-        $this->jsonDB = new JSONDB($dir);
+        $this->jsonDB = new JsonDb($dir);
         $this->file = $this->getBaseName($path);
         $this->column = '*';
     }
@@ -40,63 +40,21 @@ class SimpleJsonDB implements ReaderInterface
     }
 
     /**
-     * @return array
+     * @return LazyCollection
      * @throws Exception
      */
-    public function get(): array
+    public function get(): LazyCollection
     {
         try {
-            return $this->jsonDB
-                ->select($this->column )
-                ->from($this->file)->get();
+            return LazyCollection::make($this->jsonDB
+                ->from($this->file)->get());
         } catch (Exception $e) {
             $message = $e->getMessage();
             if ($message !== self::INVALID_JSON_ERROR) {
                 throw new Exception($message, $e->getCode());
             }
         }
-        return [];
-    }
-
-    public function size(): int
-    {
-        return $this->jsonDB->check_fp_size();
-    }
-
-    public function where( array $columns, $merge = JSONDB::OR ): self
-    {
-        $this->jsonDB->where($columns, $merge);
-        return $this;
-    }
-
-    public function andWhereRegx(string $name, string $regx): self
-    {
-        $this->jsonDB->where([ $name => JSONDB::regex( $regx )], JSONDB::AND);
-        return $this;
-    }
-
-    public function orWhereRegx(string $name, string $regx): self
-    {
-        $this->jsonDB->where([ $name => JSONDB::regex( $regx )], JSONDB::OR);
-        return $this;
-    }
-
-    public function orderBy(string $column, string $order = JSONDB::ASC): self
-    {
-        $this->jsonDB->order_by($column, $order);
-        return $this;
-    }
-
-    public function orderByDesc(string $column): self
-    {
-        $this->jsonDB->order_by($column, JSONDB::DESC);
-        return $this;
-    }
-
-    public function orderByAsc(string $column): self
-    {
-        $this->jsonDB->order_by($column, JSONDB::ASC);
-        return $this;
+        return LazyCollection::make([]);
     }
 
     public function delete(): self

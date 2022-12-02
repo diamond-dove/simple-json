@@ -6,7 +6,6 @@ use DiamondDove\SimpleJson\Traits\PathHandle;
 use DiamondDove\SimpleJson\Writer\WriterFactory;
 use DiamondDove\SimpleJson\Writer\WriterInterface;
 use Jajo\JSONDB;
-use phpDocumentor\Reflection\Utils;
 
 class SimpleJsonWriter
 {

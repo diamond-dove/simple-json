@@ -4,8 +4,8 @@ namespace DiamondDove\SimpleJson;
 
 class ReaderFactory
 {
-    public static function createFromFile(string $path): ReaderInterface
+    public static function createFromFile(string $path): SimpleJsonDB
     {
-        return new JsonReader(new SimpleJsonDB($path));
+        return new SimpleJsonDB($path);
     }
 }
