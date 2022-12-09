@@ -11,8 +11,8 @@ class SimpleJsonWriter
 {
     use PathHandle;
 
-    protected WriterInterface $writer;
-    protected string $file;
+    public readonly WriterInterface $writer;
+    public readonly string $file;
 
     public static function create(string $path): self
     {

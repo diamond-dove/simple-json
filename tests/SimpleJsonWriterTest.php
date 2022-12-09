@@ -10,19 +10,18 @@ class SimpleJsonWriterTest extends TestCase
 {
     use MatchesSnapshots;
 
-    private TemporaryDirectory $temporaryDirectory;
-    private string             $pathToJson;
+    private string $pathToJson;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->temporaryDirectory = new TemporaryDirectory(__DIR__ . '/temp');
-        $this->temporaryDirectory->delete();
-        $this->pathToJson = $this->temporaryDirectory->path('test.json');
+        $temporaryDirectory = new TemporaryDirectory(__DIR__ . '/temp');
+        $temporaryDirectory->delete();
+        $this->pathToJson = $temporaryDirectory->path('test.json');
     }
 
-    public function testCanInsertRecords()
+    public function testCanInsertRecords(): void
     {
         SimpleJsonWriter::create($this->pathToJson)
                         ->insert([
@@ -33,7 +32,7 @@ class SimpleJsonWriterTest extends TestCase
         $this->assertMatchesFileSnapshot($this->pathToJson);
     }
 
-    public function testCanInsertMultiRecords()
+    public function testCanInsertMultiRecords(): void
     {
         SimpleJsonWriter::create($this->pathToJson)
                         ->insert([
@@ -50,7 +49,7 @@ class SimpleJsonWriterTest extends TestCase
         $this->assertMatchesFileSnapshot($this->pathToJson);
     }
 
-    public function testCanUpdateRecords()
+    public function testCanUpdateRecords(): void
     {
         SimpleJsonWriter::create($this->pathToJson)
                         ->insert([
@@ -69,7 +68,7 @@ class SimpleJsonWriterTest extends TestCase
         $this->assertMatchesFileSnapshot($this->pathToJson);
     }
 
-    public function testCanDeleteRecords()
+    public function testCanDeleteRecords(): void
     {
         SimpleJsonWriter::create($this->pathToJson)
                         ->insert([

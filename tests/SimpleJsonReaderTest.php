@@ -4,7 +4,6 @@ namespace DiamondDove\SimpleJson\Tests;
 
 use DiamondDove\SimpleJson\Exceptions\InvalidJsonException;
 use DiamondDove\SimpleJson\SimpleJsonReader;
-use Illuminate\Support\Collection;
 
 class SimpleJsonReaderTest extends TestCase
 {
@@ -15,25 +14,25 @@ class SimpleJsonReaderTest extends TestCase
         $this->jsonReader = new SimpleJsonReader($this->getPath('users.json'));
     }
 
-    public function testGetUserShortFile()
+    public function testGetUserShortFile(): void
     {
         $this->assertNotEmpty($this->jsonReader->get()->toArray());
     }
 
-    public function testCanGetUserEmptyFile()
+    public function testCanGetUserEmptyFile(): void
     {
         $this->expectException(InvalidJsonException::class);
         $this->assertEmpty((new SimpleJsonReader($this->getPath('emptyFile.json')))->get()->toArray());
     }
 
-    public function testCanGetLargeFile()
+    public function testCanGetLargeFile(): void
     {
         $expectedText = "Aggressive Ponytail #freebandnames";
         $actual = (new SimpleJsonReader($this->getPath('twitter_example_0.json')))->get()->last();
         $this->assertEquals($expectedText, $actual['statuses'][0]['text']);
     }
 
-    public function testCanGetLargeFileWhereIn()
+    public function testCanGetLargeFileWhereIn(): void
     {
         $expectedText = 24012619984051000;
         $actual = (new SimpleJsonReader($this->getPath('twitter_example_0.json')))
@@ -44,14 +43,14 @@ class SimpleJsonReaderTest extends TestCase
         $this->assertEquals($expectedText, $actual['search_metadata']['since_id']);
     }
 
-    public function testGetWhereName()
+    public function testGetWhereName(): void
     {
         $expectedName = 'User 3';
         $user = $this->jsonReader->get()->where('name', '===', $expectedName)->first();
         $this->assertEquals($expectedName, $user['name']);
     }
 
-    public function testGetFile()
+    public function testGetFile(): void
     {
         $expectedFileName = $this->getBaseName($this->getPath('users.json'));
 
