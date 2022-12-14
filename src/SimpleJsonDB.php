@@ -54,47 +54,6 @@ class SimpleJsonDB implements ReaderInterface
                 throw new Exception($message, $e->getCode());
             }
         }
-        return LazyCollection::make([]);
-    }
-
-    public function delete(): self
-    {
-        $this->jsonDB->delete();
-        return $this;
-    }
-
-    public function update(array $columns): self
-    {
-        $this->jsonDB->update($columns);
-        return $this;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function insert(array $columns): bool
-    {
-        try {
-            $this->jsonDB->insert($this->file, $columns);
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
-
-        return true;
-    }
-
-    public function trigger(): void
-    {
-        $this->jsonDB->trigger();
-    }
-
-    public function toXml(string $toFile): bool
-    {
-        return $this->jsonDB->to_xml($this->file, $toFile);
-    }
-
-    public function toMysql(string $toFile, bool $createTable = true ): bool
-    {
-        return $this->jsonDB->to_mysql($this->file, $toFile, $createTable);
+        return LazyCollection::make();
     }
 }

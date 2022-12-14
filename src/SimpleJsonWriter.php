@@ -5,7 +5,6 @@ namespace DiamondDove\SimpleJson;
 use DiamondDove\SimpleJson\Traits\PathHandle;
 use DiamondDove\SimpleJson\Writer\WriterFactory;
 use DiamondDove\SimpleJson\Writer\WriterInterface;
-use Jajo\JSONDB;
 
 class SimpleJsonWriter
 {
@@ -25,32 +24,9 @@ class SimpleJsonWriter
         $this->writer = WriterFactory::createFromFile($path);
     }
 
-    public function insert(array $records): self
+    public function push(object|array $record): self
     {
-        $this->writer->insert($this->file, $records);
+        $this->writer->push($record);
         return $this;
-    }
-
-    public function where(array $where, string $merge = JSONDB::OR): self
-    {
-        $this->writer->where($where, $merge);
-        return $this;
-    }
-
-    public  function update(array $record): self
-    {
-        $this->writer->update($this->file, $record);
-        return $this;
-    }
-
-    public function delete(): self
-    {
-        $this->writer->delete($this->file);
-        return $this;
-    }
-
-    public function getWriter(): WriterInterface
-    {
-        return $this->writer;
     }
 }

@@ -2,7 +2,6 @@
 
 namespace DiamondDove\SimpleJson\Tests;
 
-use DiamondDove\SimpleJson\Exceptions\InvalidJsonException;
 use DiamondDove\SimpleJson\SimpleJsonReader;
 
 class SimpleJsonReaderTest extends TestCase
@@ -21,7 +20,6 @@ class SimpleJsonReaderTest extends TestCase
 
     public function testCanGetUserEmptyFile(): void
     {
-        $this->expectException(InvalidJsonException::class);
         $this->assertEmpty((new SimpleJsonReader($this->getPath('emptyFile.json')))->get()->toArray());
     }
 

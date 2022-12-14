@@ -1,13 +1,1 @@
-[
-    {
-        "name": "Thomas",
-        "state": "Nigeria",
-        "age": 22
-    }
-,
-    {
-        "name": "Luis",
-        "state": "Nigeria",
-        "age": 32
-    }
-]
+[{"name":"Thomas","state":"Nigeria","age":22},{"name":"Luis","state":"Nigeria","age":32}]

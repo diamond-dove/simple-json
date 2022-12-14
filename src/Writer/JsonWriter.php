@@ -9,47 +9,20 @@ class JsonWriter implements WriterInterface
 {
     use PathHandle;
 
-    protected JSONDB $writer;
-    protected array $where = [];
-    protected string $merge = JSONDB::OR;
+    protected JsonCollectionStreamWriter $writer;
 
     public function __construct(string  $path)
     {
-        $this->writer = new JSONDB($this->getDirName($path));
+        $this->writer = new JsonCollectionStreamWriter($path);
     }
 
     /**
      * @throws \Exception
      */
-    public function insert(string $file, array $records): bool
+    public function push(object|array $record): bool
     {
-        $this->writer->insert($file, $records);
+        $this->writer->push($record);
+
         return true;
-    }
-
-    public function update(string $file, array $records): bool
-    {
-        $this->writer
-            ->from($file)
-            ->update($records)
-            ->where($this->where, $this->merge)
-            ->trigger();
-        return true;
-    }
-
-    public function delete(string $file): bool
-    {
-       $this->writer
-           ->from($file)
-            ->where($this->where, $this->merge)
-            ->delete()
-            ->trigger();
-       return true;
-    }
-
-    public function where(array $where, string $merge)
-    {
-        $this->where = $where;
-        $this->merge = $merge;
     }
 }

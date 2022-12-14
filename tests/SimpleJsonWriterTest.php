@@ -24,7 +24,7 @@ class SimpleJsonWriterTest extends TestCase
     public function testCanInsertRecords(): void
     {
         SimpleJsonWriter::create($this->pathToJson)
-                        ->insert([
+                        ->push([
                             'first_name' => 'john',
                             'last_name'  => 'Doe',
                         ]);
@@ -35,12 +35,12 @@ class SimpleJsonWriterTest extends TestCase
     public function testCanInsertMultiRecords(): void
     {
         SimpleJsonWriter::create($this->pathToJson)
-                        ->insert([
+                        ->push([
                             'name'  => 'Thomas',
                             'state' => 'Nigeria',
                             'age'   => 22,
                         ])
-                        ->insert([
+                        ->push([
                             'name'  => 'Luis',
                             'state' => 'Nigeria',
                             'age'   => 32,
@@ -48,43 +48,4 @@ class SimpleJsonWriterTest extends TestCase
 
         $this->assertMatchesFileSnapshot($this->pathToJson);
     }
-
-    public function testCanUpdateRecords(): void
-    {
-        SimpleJsonWriter::create($this->pathToJson)
-                        ->insert([
-                            'name'  => 'Thomas',
-                            'state' => 'Nigeria',
-                            'age'   => 22,
-                        ])
-                        ->insert([
-                            'name'  => 'Luis',
-                            'state' => 'Nigeria',
-                            'age'   => 32,
-                        ])
-                        ->where(['name' => 'Luis'])
-                        ->update(['name' => 'Juan', 'age' => 28]);
-
-        $this->assertMatchesFileSnapshot($this->pathToJson);
-    }
-
-    public function testCanDeleteRecords(): void
-    {
-        SimpleJsonWriter::create($this->pathToJson)
-                        ->insert([
-                            'name'  => 'Thomas',
-                            'state' => 'Nigeria',
-                            'age'   => 22,
-                        ])
-                        ->insert([
-                            'name'  => 'Luis',
-                            'state' => 'Nigeria',
-                            'age'   => 32,
-                        ])
-                        ->where(['name' => 'Luis'])
-                        ->delete();
-
-        $this->assertMatchesFileSnapshot($this->pathToJson);
-    }
-
 }

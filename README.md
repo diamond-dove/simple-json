@@ -1,8 +1,7 @@
-# Read and write simple JSON files
+# Simple JSON File Reader and Writer
+This package makes it easy to read and write simple JSON files. It uses generators to minimize memory usage, even when dealing with large files.
 
-This package allows you to easily read and write simple Json files. Behind the scenes generators are used to ensure low memory usage, even when working with large files.
-
-Here's an example on how to read a Json.
+Here is an example of how to read a JSON file:
 
 ```php
 use DiamondDove\SimpleJson\SimpleJsonReader;
@@ -13,7 +12,7 @@ SimpleJsonReader::create('users.json')->get()
     });
 ```
 # Installation
-You can install the package via composer:
+You can install the package using composer:
 
 ```
 composer require diamon-dove/simple-json
@@ -21,7 +20,7 @@ composer require diamon-dove/simple-json
 
 # Usage
 ## Reading a JSON
-Imagine you have a JSON with this content.
+Suppose you have a JSON file with the following content:
 
 ```json
 [
@@ -29,6 +28,8 @@ Imagine you have a JSON with this content.
   {"email":  "jane@example.com", "first_name":  "jane"}
 ]
 ```
+
+To read this file in PHP, you can do the following:
 
 ```php
 use DiamondDove\SimpleJson\SimpleJsonReader;
@@ -42,7 +43,6 @@ $records->each(function(array $user) {
 });
 ```
 
-### Reading Json file
 ### Working with LazyCollections
 `get` will return an instance of `Illuminate\Support\LazyCollection`. This class is part of the Laravel framework. Behind the scenes generators are used, so memory usage will be low, even for large files.
 
@@ -63,12 +63,12 @@ return strlen($user['first_name']) > 5;
 ```
 
 ## Writing files
-Here's how you can write a JSON file:
+To write a JSON file, you can use the following code:
 
 use DiamondDove\SimpleJson\SimpleJsonWriter;
 ```php
 $writer = SimpleJsonWriter::create($pathToJson)
-->insert([[
+->push([[
 'first_name' => 'John',
 'last_name' => 'Doe',
 ],
@@ -87,31 +87,20 @@ The file at pathToJson will contain:
 ]
 ```
 
-### Updating Row
-You can also update same JSON file with these methods
+You can also use:
 ```php
-SimpleJsonWriter::create($pathToJson)
-->where([
-'first_name' => 'John',
-])
-->update([
-'first_name' => 'John1',
-'last_name' => 'Doe1',
-]);
+SimpleJsonWriter::create($this->pathToJson)
+                        ->push([
+                            'name'  => 'Thomas',
+                            'state' => 'Nigeria',
+                            'age'   => 22,
+                        ])
+                        ->push([
+                            'name'  => 'Luis',
+                            'state' => 'Nigeria',
+                            'age'   => 32,
+                        ]);
 ```
-Without the where() method, it will update all rows
-
-### Deleting Row
-
-```php
-SimpleJsonWriter::create($pathToJson)
-->where([
-'first_name' => 'John',
-])
-->delete();
-```
-
-Without the where() method, it will update all rows
 
 # Testing
 ```sh 
