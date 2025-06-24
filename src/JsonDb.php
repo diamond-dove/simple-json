@@ -28,10 +28,12 @@ class JsonDb
         return $this;
     }
 
-    public function get(): \Generator
+    public function get(): \Closure
     {
-        foreach ((new JsonCollectionStreamReader($this->file, $this->asArray))->get() as $item) {
-            yield $item;
-        }
+        return function () {
+            foreach ((new JsonCollectionStreamReader($this->file, $this->asArray))->get() as $item) {
+                yield $item;
+            }
+        };
     }
 }
