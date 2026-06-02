@@ -2,6 +2,7 @@
 
 namespace DiamondDove\SimpleJson\Tests;
 
+use DiamondDove\SimpleJson\Reader\JsonCollectionStreamReader;
 use DiamondDove\SimpleJson\SimpleJsonReader;
 use DiamondDove\SimpleJson\SimpleJsonWriter;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
@@ -102,6 +103,51 @@ class SimpleJsonReaderTest extends TestCase
 
         $this->assertSame(5000, $count);
         $this->assertLessThan($fileGetContentsUsage, $streamedUsage);
+
+        $temporaryDirectory->delete();
+    }
+
+    public function testHandlesStructuralCharactersInsideStringValues(): void
+    {
+        $records = [
+            ['id' => 1, 'note' => 'has a } brace and { another, plus [ ] brackets'],
+            ['id' => 2, 'note' => 'a "quoted" word and a path C:\\temp\\x'],
+            ['id' => 3, 'note' => 'looks like json: {"fake":"object"}'],
+            ['id' => 4, 'note' => 'normal'],
+        ];
+
+        $temporaryDirectory = (new TemporaryDirectory(__DIR__ . '/temp'))->empty();
+        $path = $temporaryDirectory->path('tricky.json');
+        file_put_contents($path, json_encode($records));
+
+        $expected = json_decode(file_get_contents($path), true);
+        $actual = (new SimpleJsonReader($path))->get()->toArray();
+
+        $this->assertEquals($expected, $actual);
+        $this->assertCount(4, $actual);
+
+        $temporaryDirectory->delete();
+    }
+
+    public function testHandlesStringWithBracesSpanningAChunkBoundary(): void
+    {
+        // A single record whose string value is far larger than one read chunk
+        // and is full of structural characters, forcing the parser to keep its
+        // string state correct across many fread() boundaries.
+        $noisy = str_repeat('}{][",\\ ', JsonCollectionStreamReader::CHUNK_SIZE);
+        $records = [
+            ['id' => 1, 'blob' => $noisy],
+            ['id' => 2, 'blob' => 'after the big one'],
+        ];
+
+        $temporaryDirectory = (new TemporaryDirectory(__DIR__ . '/temp'))->empty();
+        $path = $temporaryDirectory->path('chunky.json');
+        file_put_contents($path, json_encode($records));
+
+        $actual = (new SimpleJsonReader($path))->get()->toArray();
+
+        $this->assertEquals(json_decode(file_get_contents($path), true), $actual);
+        $this->assertSame($noisy, $actual[0]['blob']);
 
         $temporaryDirectory->delete();
     }

@@ -9,6 +9,8 @@ class JsonCollectionStreamReader
     protected const END_OF_COLLECTION = ']';
     protected const START_OF_ITEM = '{';
     protected const END_OF_ITEM = '}';
+    protected const STRING_DELIMITER = '"';
+    protected const ESCAPE = '\\';
 
     private $resource;
 
@@ -59,11 +61,38 @@ class JsonCollectionStreamReader
         $keepFrom = 0;
         $itemInProgress = false;
 
+        // String state is local because every chunk is re-scanned from a clean
+        // boundary (the root bracket or an item's opening brace), never from the
+        // middle of a string — so it can safely start fresh on each call.
+        $inString = false;
+        $escaped = false;
+
         // We want to iterate over chars but since,
         // we can have multibyte strings we can't access them by position alone
         $split = mb_str_split($this->buffer);
 
         foreach ($split as $position => $char) {
+            // Inside a string literal nothing is structural: braces, brackets and
+            // even escaped quotes are just data. Track escapes so an escaped quote
+            // (\") doesn't prematurely close the string.
+            if ($inString) {
+                if ($escaped) {
+                    $escaped = false;
+                } elseif ($char === self::ESCAPE) {
+                    $escaped = true;
+                } elseif ($char === self::STRING_DELIMITER) {
+                    $inString = false;
+                }
+
+                continue;
+            }
+
+            // Opening quote of a string value — suspend structural parsing.
+            if ($char === self::STRING_DELIMITER) {
+                $inString = true;
+                continue;
+            }
+
             // Start of the collection
             if ($this->nestingLevel === 0 && $char === self::START_OF_COLLECTION) {
                 $keepFrom = $position + 1;
