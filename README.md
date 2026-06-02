@@ -4,8 +4,11 @@
 [![Tests](https://img.shields.io/github/actions/workflow/status/diamond-dove/simple-json/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/diamond-dove/simple-json/actions/workflows/tests.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/diamond-dove/simple-json.svg?style=flat-square)](https://packagist.org/packages/diamond-dove/simple-json)
 [![License](https://img.shields.io/packagist/l/diamond-dove/simple-json.svg?style=flat-square)](LICENSE.md)
+[![GitHub Stars](https://img.shields.io/github/stars/diamond-dove/simple-json?style=flat-square&logo=github)](https://github.com/diamond-dove/simple-json/stargazers)
 
 This package makes it easy to read and write simple JSON files. It uses generators to minimize memory usage, even when dealing with large files.
+
+> ⭐ **Enjoying this package?** If it saves you time, please consider [giving it a star on GitHub](https://github.com/diamond-dove/simple-json) — it helps other developers discover it and motivates continued work. Thank you!
 
 Here is an example of how to read a JSON file:
 
@@ -375,6 +378,9 @@ Please see [CONTRIBUTING](https://github.com/diamond-dove/simple-json/blob/main/
 
 # Security
 If you discover any security related issues, please email masterfermin02@gmail.com instead of using the issue tracker.
+
+# Show your support
+If this package is useful to you, please ⭐ **[star it on GitHub](https://github.com/diamond-dove/simple-json)**. It's the easiest way to support the project, helps others find it, and is genuinely appreciated.
 
 # Credits
 - [Fermin Perdomo](https://github.com/masterfermin02)

@@ -52,6 +52,12 @@
     }
   },
   "scripts": {
+    "post-install-cmd": [
+      "@php -r \"echo PHP_EOL, '⭐  Enjoying diamond-dove/simple-json? Please give it a star: https://github.com/diamond-dove/simple-json', PHP_EOL, PHP_EOL;\""
+    ],
+    "post-update-cmd": [
+      "@php -r \"echo PHP_EOL, '⭐  Enjoying diamond-dove/simple-json? Please give it a star: https://github.com/diamond-dove/simple-json', PHP_EOL, PHP_EOL;\""
+    ],
     "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes",
     "analyse": "vendor/bin/phpstan analyse",
     "test": "vendor/bin/phpunit",
