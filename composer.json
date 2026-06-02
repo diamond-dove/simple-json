@@ -30,8 +30,12 @@
     "friendsofphp/php-cs-fixer": "^3.0",
     "phpstan/phpstan": "^1.11 || ^2.0",
     "phpunit/phpunit": "^12.0",
+    "softcreatr/jsonpath": "^0.10",
     "spatie/phpunit-snapshot-assertions": "^5.2.0",
     "spatie/temporary-directory": "^2.0"
+  },
+  "suggest": {
+    "softcreatr/jsonpath": "Enables Json::query() for full JSONPath expressions (recursive descent, wildcards, slices, filters)"
   },
   "autoload": {
     "psr-4": {

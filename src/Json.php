@@ -73,4 +73,21 @@ final class Json
 
         return (new ObjectMapper())->map($data, $className);
     }
+
+    /**
+     * Evaluate a full JSONPath expression against a JSON string and return the
+     * list of matched values. This is an optional escape hatch backed by the
+     * softcreatr/jsonpath package (a dev/suggest dependency, not a hard one):
+     * calling it without that package installed raises a MissingDependencyException.
+     *
+     * @return array<array-key, mixed>
+     *
+     * @throws \DiamondDove\SimpleJson\Exceptions\MissingDependencyException when softcreatr/jsonpath is not installed
+     * @throws InvalidJsonException when the input is not valid JSON
+     * @throws \DiamondDove\SimpleJson\Exceptions\JsonQueryException when the expression is not valid JSONPath
+     */
+    public static function query(string $json, string $jsonPath): array
+    {
+        return (new \DiamondDove\SimpleJson\JsonPath\JsonPath())->query($json, $jsonPath);
+    }
 }
