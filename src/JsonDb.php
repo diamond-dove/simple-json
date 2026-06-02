@@ -2,7 +2,6 @@
 
 namespace DiamondDove\SimpleJson;
 
-use DiamondDove\SimpleJson\Exceptions\InvalidJsonException;
 use DiamondDove\SimpleJson\Reader\JsonCollectionStreamReader;
 
 class JsonDb
@@ -12,7 +11,8 @@ class JsonDb
 
     protected bool $asArray = true;
 
-    public function __construct($dir) {
+    public function __construct(string $dir)
+    {
         $this->dir = $dir;
     }
 
@@ -21,13 +21,16 @@ class JsonDb
         $this->asArray = false;
     }
 
-    public function from($file): self
+    public function from(string $file): self
     {
-        $this->file = sprintf( '%s/%s.json', $this->dir, str_replace('.json', '', $file)); // Adding .json extension is no longer necessary
+        $this->file = sprintf('%s/%s.json', $this->dir, str_replace('.json', '', $file)); // Adding .json extension is no longer necessary
 
         return $this;
     }
 
+    /**
+     * @return \Closure(): \Generator<int, mixed>
+     */
     public function get(): \Closure
     {
         return function () {

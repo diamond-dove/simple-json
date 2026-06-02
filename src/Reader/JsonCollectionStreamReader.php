@@ -9,7 +9,10 @@ class JsonCollectionStreamReader
     protected const END_OF_COLLECTION = ']';
     protected const START_OF_ITEM = '{';
     protected const END_OF_ITEM = '}';
+    protected const STRING_DELIMITER = '"';
+    protected const ESCAPE = '\\';
 
+    /** @var resource */
     private $resource;
 
     protected bool $asArray = false;
@@ -18,24 +21,56 @@ class JsonCollectionStreamReader
 
     protected int $nestingLevel = 0;
 
-    public function __construct(string $path, bool $asArray = false)
+    /**
+     * Whether we opened the resource ourselves and are therefore responsible
+     * for closing it. Caller-supplied resources are left open.
+     */
+    private bool $shouldClose;
+
+    /**
+     * @param  resource|string  $source  An open stream resource or a path to a JSON file.
+     */
+    public function __construct($source, bool $asArray = false)
     {
-        if (!file_exists($path)) {
+        $this->asArray = $asArray;
+
+        if (is_resource($source)) {
+            $this->resource = $source;
+            $this->shouldClose = false;
+
+            return;
+        }
+
+        if (!file_exists($source)) {
             throw new \InvalidArgumentException('There is no file at given path');
         }
 
-        $this->asArray = $asArray;
+        $this->resource = fopen($source, 'rb');
+        $this->shouldClose = true;
+    }
 
-        $this->resource = fopen($path, 'rb');
+    public static function fromString(string $json, bool $asArray = false): self
+    {
+        $resource = fopen('php://temp', 'r+b');
+        fwrite($resource, $json);
+
+        $reader = new self($resource, $asArray);
+        // We created this in-memory stream, so we own it.
+        $reader->shouldClose = true;
+
+        return $reader;
     }
 
     public function close(): void
     {
-        if (is_resource($this->resource)) {
+        if ($this->shouldClose && is_resource($this->resource)) {
             fclose($this->resource);
         }
     }
 
+    /**
+     * @return \Generator<int, mixed>
+     */
     public function get(): \Generator
     {
         $this->buffer = '';
@@ -50,7 +85,10 @@ class JsonCollectionStreamReader
         }
     }
 
-    private function parseChunk($chunk): \Generator
+    /**
+     * @return \Generator<int, mixed>
+     */
+    private function parseChunk(string $chunk): \Generator
     {
         // Continue from where we left off
         $this->buffer .= $chunk;
@@ -59,11 +97,38 @@ class JsonCollectionStreamReader
         $keepFrom = 0;
         $itemInProgress = false;
 
+        // String state is local because every chunk is re-scanned from a clean
+        // boundary (the root bracket or an item's opening brace), never from the
+        // middle of a string — so it can safely start fresh on each call.
+        $inString = false;
+        $escaped = false;
+
         // We want to iterate over chars but since,
         // we can have multibyte strings we can't access them by position alone
         $split = mb_str_split($this->buffer);
 
         foreach ($split as $position => $char) {
+            // Inside a string literal nothing is structural: braces, brackets and
+            // even escaped quotes are just data. Track escapes so an escaped quote
+            // (\") doesn't prematurely close the string.
+            if ($inString) {
+                if ($escaped) {
+                    $escaped = false;
+                } elseif ($char === self::ESCAPE) {
+                    $escaped = true;
+                } elseif ($char === self::STRING_DELIMITER) {
+                    $inString = false;
+                }
+
+                continue;
+            }
+
+            // Opening quote of a string value — suspend structural parsing.
+            if ($char === self::STRING_DELIMITER) {
+                $inString = true;
+                continue;
+            }
+
             // Start of the collection
             if ($this->nestingLevel === 0 && $char === self::START_OF_COLLECTION) {
                 $keepFrom = $position + 1;

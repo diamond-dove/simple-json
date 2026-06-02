@@ -5,8 +5,8 @@ namespace DiamondDove\SimpleJson\Tests;
 use DiamondDove\SimpleJson\SimpleJsonWriter;
 use DiamondDove\SimpleJson\Writer\JsonCollectionStreamWriter;
 use DiamondDove\SimpleJson\Writer\JsonWriter;
-use Spatie\TemporaryDirectory\TemporaryDirectory;
 use Spatie\Snapshots\MatchesSnapshots;
+use Spatie\TemporaryDirectory\TemporaryDirectory;
 
 class SimpleJsonWriterTest extends TestCase
 {

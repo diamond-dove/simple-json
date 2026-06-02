@@ -3,10 +3,10 @@
 namespace DiamondDove\SimpleJson;
 
 use DiamondDove\SimpleJson\Traits\PathHandle;
-use Illuminate\Support\LazyCollection;
 use Exception;
+use Illuminate\Support\LazyCollection;
 
-class SimpleJsonDB implements ReaderInterface
+final class SimpleJsonDB implements ReaderInterface
 {
     use PathHandle;
     protected JsonDb $jsonDB;
@@ -40,7 +40,7 @@ class SimpleJsonDB implements ReaderInterface
     }
 
     /**
-     * @return LazyCollection
+     * @return LazyCollection<int, mixed>
      * @throws Exception
      */
     public function get(): LazyCollection

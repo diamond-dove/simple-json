@@ -1,4 +1,10 @@
 # Simple JSON File Reader and Writer
+
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/diamond-dove/simple-json.svg?style=flat-square)](https://packagist.org/packages/diamond-dove/simple-json)
+[![Tests](https://img.shields.io/github/actions/workflow/status/diamond-dove/simple-json/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/diamond-dove/simple-json/actions/workflows/tests.yml)
+[![Total Downloads](https://img.shields.io/packagist/dt/diamond-dove/simple-json.svg?style=flat-square)](https://packagist.org/packages/diamond-dove/simple-json)
+[![License](https://img.shields.io/packagist/l/diamond-dove/simple-json.svg?style=flat-square)](LICENSE.md)
+
 This package makes it easy to read and write simple JSON files. It uses generators to minimize memory usage, even when dealing with large files.
 
 Here is an example of how to read a JSON file:
@@ -11,11 +17,14 @@ SimpleJsonReader::create('users.json')->get()
         // process the row
     });
 ```
+# Requirements
+- PHP 8.4 or higher
+
 # Installation
 You can install the package using composer:
 
 ```
-composer require diamon-dove/simple-json
+composer require diamond-dove/simple-json
 ```
 
 # Usage
@@ -62,21 +71,46 @@ return strlen($user['first_name']) > 5;
 });
 ```
 
+### Reading from a string or a stream
+You don't have to read from a file. If you already have the JSON in a string,
+or in an open stream resource, you can read from it directly:
+
+```php
+use DiamondDove\SimpleJson\SimpleJsonReader;
+
+// From a string
+SimpleJsonReader::createFromString('[{"name": "John"}, {"name": "Jane"}]')
+    ->get()
+    ->each(function (array $user) {
+        // process the row
+    });
+
+// From an open stream resource (you keep ownership of the resource)
+$stream = fopen('php://temp', 'r+b');
+fwrite($stream, '[{"name": "John"}]');
+
+SimpleJsonReader::createFromResource($stream)->get()->each(/* ... */);
+
+fclose($stream);
+```
+
 ## Writing files
 To write a JSON file, you can use the following code:
 
-use DiamondDove\SimpleJson\SimpleJsonWriter;
 ```php
+use DiamondDove\SimpleJson\SimpleJsonWriter;
+
 $writer = SimpleJsonWriter::create($pathToJson)
-->push([[
-'first_name' => 'John',
-'last_name' => 'Doe',
-],
-[
-'first_name' => 'Jane',
-'last_name' => 'Doe',
-]
-]);
+    ->push([
+        [
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+        ],
+        [
+            'first_name' => 'Jane',
+            'last_name' => 'Doe',
+        ],
+    ]);
 ```
 The file at pathToJson will contain:
 
@@ -103,9 +137,14 @@ SimpleJsonWriter::create($this->pathToJson)
 ```
 
 # Testing
-```sh 
-composer test
+```sh
+composer test       # run the test suite
+composer analyse    # run PHPStan static analysis
+composer format     # apply the code style fixes
 ```
+
+# Changelog
+Please see [CHANGELOG](CHANGELOG.md) for details on what has changed recently.
 
 # Contributing
 Please see [CONTRIBUTING](https://github.com/diamond-dove/simple-json/blob/main/CONTRIBUTING.md) for details.

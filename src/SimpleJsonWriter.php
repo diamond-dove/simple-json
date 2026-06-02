@@ -6,7 +6,7 @@ use DiamondDove\SimpleJson\Traits\PathHandle;
 use DiamondDove\SimpleJson\Writer\WriterFactory;
 use DiamondDove\SimpleJson\Writer\WriterInterface;
 
-class SimpleJsonWriter
+final class SimpleJsonWriter
 {
     use PathHandle;
 
@@ -24,9 +24,13 @@ class SimpleJsonWriter
         $this->writer = WriterFactory::createFromFile($path);
     }
 
+    /**
+     * @param  object|array<array-key, mixed>  $record
+     */
     public function push(object|array $record): self
     {
         $this->writer->push($record);
+
         return $this;
     }
 }

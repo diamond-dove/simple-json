@@ -2,6 +2,7 @@
 
 namespace DiamondDove\SimpleJson\Tests;
 
+use DiamondDove\SimpleJson\Reader\JsonCollectionStreamReader;
 use DiamondDove\SimpleJson\SimpleJsonReader;
 use DiamondDove\SimpleJson\SimpleJsonWriter;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
@@ -27,7 +28,7 @@ class SimpleJsonReaderTest extends TestCase
 
     public function testCanGetLargeFile(): void
     {
-        $expectedText = "Aggressive Ponytail #freebandnames";
+        $expectedText = 'Aggressive Ponytail #freebandnames';
         $actual = (new SimpleJsonReader($this->getPath('twitter_example_0.json')))->get()->last();
         $this->assertEquals($expectedText, $actual['statuses'][0]['text']);
     }
@@ -104,5 +105,75 @@ class SimpleJsonReaderTest extends TestCase
         $this->assertLessThan($fileGetContentsUsage, $streamedUsage);
 
         $temporaryDirectory->delete();
+    }
+
+    public function testHandlesStructuralCharactersInsideStringValues(): void
+    {
+        $records = [
+            ['id' => 1, 'note' => 'has a } brace and { another, plus [ ] brackets'],
+            ['id' => 2, 'note' => 'a "quoted" word and a path C:\\temp\\x'],
+            ['id' => 3, 'note' => 'looks like json: {"fake":"object"}'],
+            ['id' => 4, 'note' => 'normal'],
+        ];
+
+        $temporaryDirectory = (new TemporaryDirectory(__DIR__ . '/temp'))->empty();
+        $path = $temporaryDirectory->path('tricky.json');
+        file_put_contents($path, json_encode($records));
+
+        $expected = json_decode(file_get_contents($path), true);
+        $actual = (new SimpleJsonReader($path))->get()->toArray();
+
+        $this->assertEquals($expected, $actual);
+        $this->assertCount(4, $actual);
+
+        $temporaryDirectory->delete();
+    }
+
+    public function testHandlesStringWithBracesSpanningAChunkBoundary(): void
+    {
+        // A single record whose string value is far larger than one read chunk
+        // and is full of structural characters, forcing the parser to keep its
+        // string state correct across many fread() boundaries.
+        $noisy = str_repeat('}{][",\\ ', JsonCollectionStreamReader::CHUNK_SIZE);
+        $records = [
+            ['id' => 1, 'blob' => $noisy],
+            ['id' => 2, 'blob' => 'after the big one'],
+        ];
+
+        $temporaryDirectory = (new TemporaryDirectory(__DIR__ . '/temp'))->empty();
+        $path = $temporaryDirectory->path('chunky.json');
+        file_put_contents($path, json_encode($records));
+
+        $actual = (new SimpleJsonReader($path))->get()->toArray();
+
+        $this->assertEquals(json_decode(file_get_contents($path), true), $actual);
+        $this->assertSame($noisy, $actual[0]['blob']);
+
+        $temporaryDirectory->delete();
+    }
+
+    public function testCanReadFromAString(): void
+    {
+        $json = '[{"name":"User 1"},{"name":"User 2"}]';
+
+        $records = SimpleJsonReader::createFromString($json)->get();
+
+        $this->assertEquals(json_decode($json, true), $records->toArray());
+        // Re-iterable: a second pass yields the same data.
+        $this->assertSame('User 2', $records->last()['name']);
+    }
+
+    public function testCanReadFromAStreamResource(): void
+    {
+        $resource = fopen('php://temp', 'r+b');
+        fwrite($resource, '[{"name":"User 1"},{"name":"User 2"}]');
+
+        $records = SimpleJsonReader::createFromResource($resource)->get();
+
+        $this->assertSame(['User 1', 'User 2'], $records->pluck('name')->toArray());
+        // The caller keeps ownership of the resource.
+        $this->assertTrue(is_resource($resource));
+
+        fclose($resource);
     }
 }

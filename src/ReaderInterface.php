@@ -10,5 +10,8 @@ interface ReaderInterface
 
     public function from(string $path): self;
 
+    /**
+     * @return LazyCollection<int, mixed>
+     */
     public function get(): LazyCollection;
 }

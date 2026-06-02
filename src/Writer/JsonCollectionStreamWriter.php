@@ -29,7 +29,7 @@ class JsonCollectionStreamWriter
 
     public static function create(string $path): self
     {
-        return new static($path);
+        return new self($path);
     }
 
     /**
@@ -48,9 +48,9 @@ class JsonCollectionStreamWriter
     /**
      * Serialize the item and write it to the collection.
      *
-     * @param  array|object  $item
+     * @param  object|array<array-key, mixed>  $item
      */
-    public function push(object| array $item): void
+    public function push(object|array $item): void
     {
         // We don't need to separate from the previous item if there are none.
         if ($this->key !== 0) {
