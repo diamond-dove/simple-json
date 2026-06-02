@@ -312,6 +312,54 @@ exactly what to install. An invalid JSONPath expression throws `JsonQueryExcepti
 malformed JSON throws `InvalidJsonException` — all three implement the `JsonException`
 marker, so you can catch them uniformly.
 
+## JSON Schema validation (optional)
+
+When you already have a JSON Schema, `Json::validateSchema()` validates a document against
+it by wrapping the optional [`opis/json-schema`](https://github.com/opis/json-schema)
+package (multiple drafts). It complements the built-in rule engine.
+
+```sh
+composer require opis/json-schema
+```
+
+```php
+use DiamondDove\SimpleJson\Json;
+
+$schema = '{"type":"object","required":["age"],"properties":{"age":{"type":"integer","minimum":0}}}';
+
+Json::matchesSchema('{"age":30}', $schema);   // true
+Json::matchesSchema('{"age":-1}', $schema);   // false
+
+$result = Json::validateSchema('{"age":-1}', $schema);
+$result->passes();   // false
+$result->errors();   // ['/age: Number must be greater than or equal to 0']
+```
+
+Remote `$ref`s are **not** fetched (no network access), so the validator is safe against
+SSRF. A structurally invalid schema throws `JsonSchemaException`; a document that simply
+doesn't conform is reported through the result (not an exception).
+
+## Advanced typed mapping (optional)
+
+`Json::map()` covers plain DTOs. For advanced type signatures it can't express —
+`list<string>`, `int<0,100>`, `non-empty-string`, shaped arrays, generics — `Json::mapTo()`
+wraps the optional [`cuyz/valinor`](https://github.com/CuyZ/Valinor) mapper.
+
+```sh
+composer require cuyz/valinor
+```
+
+```php
+use DiamondDove\SimpleJson\Json;
+
+Json::mapTo('["a", "b", "c"]', 'list<string>');                 // ['a', 'b', 'c']
+Json::mapTo('{"name": "Ana", "age": 30}', 'array{name: string, age: int}');
+Json::mapTo('200', 'int<0, 100>');   // throws JsonMappingException (out of range)
+```
+
+Data that violates the signature throws `JsonMappingException`; an invalid signature is a
+programming error and throws `\InvalidArgumentException`.
+
 # Testing
 ```sh
 composer test       # run the test suite
