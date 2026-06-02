@@ -12,6 +12,7 @@ class JsonCollectionStreamReader
     protected const STRING_DELIMITER = '"';
     protected const ESCAPE = '\\';
 
+    /** @var resource */
     private $resource;
 
     protected bool $asArray = false;
@@ -20,24 +21,56 @@ class JsonCollectionStreamReader
 
     protected int $nestingLevel = 0;
 
-    public function __construct(string $path, bool $asArray = false)
+    /**
+     * Whether we opened the resource ourselves and are therefore responsible
+     * for closing it. Caller-supplied resources are left open.
+     */
+    private bool $shouldClose;
+
+    /**
+     * @param  resource|string  $source  An open stream resource or a path to a JSON file.
+     */
+    public function __construct($source, bool $asArray = false)
     {
-        if (!file_exists($path)) {
+        $this->asArray = $asArray;
+
+        if (is_resource($source)) {
+            $this->resource = $source;
+            $this->shouldClose = false;
+
+            return;
+        }
+
+        if (!file_exists($source)) {
             throw new \InvalidArgumentException('There is no file at given path');
         }
 
-        $this->asArray = $asArray;
+        $this->resource = fopen($source, 'rb');
+        $this->shouldClose = true;
+    }
 
-        $this->resource = fopen($path, 'rb');
+    public static function fromString(string $json, bool $asArray = false): self
+    {
+        $resource = fopen('php://temp', 'r+b');
+        fwrite($resource, $json);
+
+        $reader = new self($resource, $asArray);
+        // We created this in-memory stream, so we own it.
+        $reader->shouldClose = true;
+
+        return $reader;
     }
 
     public function close(): void
     {
-        if (is_resource($this->resource)) {
+        if ($this->shouldClose && is_resource($this->resource)) {
             fclose($this->resource);
         }
     }
 
+    /**
+     * @return \Generator<int, mixed>
+     */
     public function get(): \Generator
     {
         $this->buffer = '';
@@ -52,7 +85,10 @@ class JsonCollectionStreamReader
         }
     }
 
-    private function parseChunk($chunk): \Generator
+    /**
+     * @return \Generator<int, mixed>
+     */
+    private function parseChunk(string $chunk): \Generator
     {
         // Continue from where we left off
         $this->buffer .= $chunk;

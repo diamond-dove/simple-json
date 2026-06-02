@@ -28,7 +28,7 @@ class SimpleJsonReaderTest extends TestCase
 
     public function testCanGetLargeFile(): void
     {
-        $expectedText = "Aggressive Ponytail #freebandnames";
+        $expectedText = 'Aggressive Ponytail #freebandnames';
         $actual = (new SimpleJsonReader($this->getPath('twitter_example_0.json')))->get()->last();
         $this->assertEquals($expectedText, $actual['statuses'][0]['text']);
     }
@@ -150,5 +150,30 @@ class SimpleJsonReaderTest extends TestCase
         $this->assertSame($noisy, $actual[0]['blob']);
 
         $temporaryDirectory->delete();
+    }
+
+    public function testCanReadFromAString(): void
+    {
+        $json = '[{"name":"User 1"},{"name":"User 2"}]';
+
+        $records = SimpleJsonReader::createFromString($json)->get();
+
+        $this->assertEquals(json_decode($json, true), $records->toArray());
+        // Re-iterable: a second pass yields the same data.
+        $this->assertSame('User 2', $records->last()['name']);
+    }
+
+    public function testCanReadFromAStreamResource(): void
+    {
+        $resource = fopen('php://temp', 'r+b');
+        fwrite($resource, '[{"name":"User 1"},{"name":"User 2"}]');
+
+        $records = SimpleJsonReader::createFromResource($resource)->get();
+
+        $this->assertSame(['User 1', 'User 2'], $records->pluck('name')->toArray());
+        // The caller keeps ownership of the resource.
+        $this->assertTrue(is_resource($resource));
+
+        fclose($resource);
     }
 }

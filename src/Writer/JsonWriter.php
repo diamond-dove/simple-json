@@ -3,7 +3,6 @@
 namespace DiamondDove\SimpleJson\Writer;
 
 use DiamondDove\SimpleJson\Traits\PathHandle;
-use Jajo\JSONDB;
 
 class JsonWriter implements WriterInterface
 {
@@ -16,6 +15,9 @@ class JsonWriter implements WriterInterface
         $this->writer = new JsonCollectionStreamWriter($path);
     }
 
+    /**
+     * @param  object|array<array-key, mixed>  $record
+     */
     public function push(object|array $record): bool
     {
         try {

@@ -14,7 +14,7 @@ trait PathHandle
         return $this->getPathInfo($path, PATHINFO_DIRNAME);
     }
 
-    public function getPathInfo(string $path, $flags): string
+    public function getPathInfo(string $path, int $flags): string
     {
         return \strtolower(\pathinfo($path, $flags));
     }
