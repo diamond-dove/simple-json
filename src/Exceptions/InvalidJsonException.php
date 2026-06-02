@@ -2,6 +2,6 @@
 
 namespace DiamondDove\SimpleJson\Exceptions;
 
-class InvalidJsonException extends \Exception
+final class InvalidJsonException extends \RuntimeException implements JsonException
 {
 }

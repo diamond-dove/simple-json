@@ -1,0 +1,1 @@
+{"user":{"address":{"city":"Santo Domingo","zip":10101},"name":"Ana","active":true,"score":4.5,"tags":["a","b"]},"count":5,"ratio":2.0,"missingNull":null,"weird.key":"dotted"}
