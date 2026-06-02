@@ -281,6 +281,37 @@ SimpleJsonReader::create('users.json')->get()
     });
 ```
 
+## JSONPath queries (optional)
+
+For queries that go beyond the core dot-notation `path()` — recursive descent,
+wildcards, array slices, filter expressions — `Json::query()` wraps the
+[`softcreatr/jsonpath`](https://github.com/SoftCreatR/JSONPath) package. It is an
+**optional** dependency: the toolkit core stays dependency-free, and you only pull it in
+if you need full JSONPath.
+
+```sh
+composer require softcreatr/jsonpath
+```
+
+```php
+use DiamondDove\SimpleJson\Json;
+
+$json = '{"store": {"book": [
+    {"title": "A", "price": 8.95},
+    {"title": "B", "price": 12.99}
+]}}';
+
+Json::query($json, '$..book[?(@.price < 10)].title');  // ['A']
+Json::query($json, '$.store.book[*].title');           // ['A', 'B']
+Json::query($json, '$..nonexistent');                  // []  (empty match)
+```
+
+If the package is not installed, `Json::query()` throws a
+`DiamondDove\SimpleJson\Exceptions\MissingDependencyException` whose message tells you
+exactly what to install. An invalid JSONPath expression throws `JsonQueryException`, and
+malformed JSON throws `InvalidJsonException` — all three implement the `JsonException`
+marker, so you can catch them uniformly.
+
 # Testing
 ```sh
 composer test       # run the test suite
