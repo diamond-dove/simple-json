@@ -27,7 +27,9 @@
     "illuminate/support": "^12.0 || ^13.0"
   },
   "require-dev": {
+    "cuyz/valinor": "^2.4",
     "friendsofphp/php-cs-fixer": "^3.0",
+    "opis/json-schema": "^2.6",
     "phpstan/phpstan": "^1.11 || ^2.0",
     "phpunit/phpunit": "^12.0",
     "softcreatr/jsonpath": "^0.10",
@@ -35,6 +37,8 @@
     "spatie/temporary-directory": "^2.0"
   },
   "suggest": {
+    "cuyz/valinor": "Enables Json::mapTo() for advanced typed mapping (list<string>, int<0,100>, shaped arrays, ...)",
+    "opis/json-schema": "Enables Json::validateSchema()/matchesSchema() for JSON Schema validation",
     "softcreatr/jsonpath": "Enables Json::query() for full JSONPath expressions (recursive descent, wildcards, slices, filters)"
   },
   "autoload": {

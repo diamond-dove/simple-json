@@ -90,4 +90,23 @@ final class JsonMappingException extends \RuntimeException implements JsonExcept
             $previous,
         );
     }
+
+    /**
+     * Wrap a cuyz/valinor mapping failure. The signature being mapped and the
+     * library's own messages are folded into a single human-readable string,
+     * while the underlying valinor error is chained as the previous exception so
+     * no vendor type leaks out of {@see \DiamondDove\SimpleJson\Json::mapTo()}.
+     *
+     * @param  list<string>  $messages  human-readable reasons the data failed $signature
+     */
+    public static function fromValinor(string $signature, array $messages, \Throwable $previous): self
+    {
+        $detail = $messages === [] ? $previous->getMessage() : implode(' ', $messages);
+
+        return new self(
+            "Cannot map JSON to type \"{$signature}\": {$detail}",
+            0,
+            $previous,
+        );
+    }
 }

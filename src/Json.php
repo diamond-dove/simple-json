@@ -90,4 +90,50 @@ final class Json
     {
         return (new \DiamondDove\SimpleJson\JsonPath\JsonPath())->query($json, $jsonPath);
     }
+
+    /**
+     * Validate a JSON document against a JSON Schema (both supplied as strings),
+     * returning a structured result of human-readable messages. This is an
+     * optional escape hatch backed by the opis/json-schema package (a
+     * dev/suggest dependency, not a hard one): calling it without that package
+     * installed raises a MissingDependencyException. No remote $ref is fetched.
+     *
+     * @throws \DiamondDove\SimpleJson\Exceptions\MissingDependencyException when opis/json-schema is not installed
+     * @throws InvalidJsonException when $json or $schema is not valid JSON
+     * @throws \DiamondDove\SimpleJson\Exceptions\JsonSchemaException when $schema parses as JSON but is not a usable schema
+     */
+    public static function validateSchema(string $json, string $schema): \DiamondDove\SimpleJson\Schema\SchemaValidationResult
+    {
+        return (new \DiamondDove\SimpleJson\Schema\SchemaValidator())->validate($json, $schema);
+    }
+
+    /**
+     * Convenience boolean wrapper around {@see self::validateSchema()}: true when
+     * the document conforms to the schema, false otherwise.
+     *
+     * @throws \DiamondDove\SimpleJson\Exceptions\MissingDependencyException when opis/json-schema is not installed
+     * @throws InvalidJsonException when $json or $schema is not valid JSON
+     * @throws \DiamondDove\SimpleJson\Exceptions\JsonSchemaException when $schema parses as JSON but is not a usable schema
+     */
+    public static function matchesSchema(string $json, string $schema): bool
+    {
+        return self::validateSchema($json, $schema)->passes();
+    }
+
+    /**
+     * Map a JSON string onto an advanced valinor type signature -- e.g.
+     * `list<string>`, `int<0, 100>`, `non-empty-string`, or a shaped array.
+     * This is an optional escape hatch backed by the cuyz/valinor package (a
+     * dev/suggest dependency, not a hard one): calling it without that package
+     * installed raises a MissingDependencyException.
+     *
+     * @throws \DiamondDove\SimpleJson\Exceptions\MissingDependencyException when cuyz/valinor is not installed
+     * @throws InvalidJsonException when $json is not valid JSON
+     * @throws JsonMappingException when the data does not satisfy $signature
+     * @throws \InvalidArgumentException when $signature itself is not a valid type
+     */
+    public static function mapTo(string $json, string $signature): mixed
+    {
+        return (new \DiamondDove\SimpleJson\Mapping\ValinorMapper())->map($json, $signature);
+    }
 }
