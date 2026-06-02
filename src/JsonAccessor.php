@@ -57,6 +57,15 @@ final class JsonAccessor
         return $this->exists;
     }
 
+    /**
+     * The raw decoded value at the current node, returned without any type
+     * checking or coercion. Returns null for a missing accessor.
+     */
+    public function value(): mixed
+    {
+        return $this->value;
+    }
+
     public function string(): string
     {
         /** @var string */
