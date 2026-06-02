@@ -212,6 +212,75 @@ with the accessor): `int`/`numeric` reject numeric strings, `bool` rejects `0`/`
 array count). An unknown rule or a missing rule parameter throws `\InvalidArgumentException`
 (it's a programming error, not a validation failure).
 
+## Mapping to typed objects (DTOs)
+
+`Json::map()` hydrates a plain PHP class from a JSON string (or an already-decoded array)
+using constructor property promotion — no setters, no reflection-written private
+properties, and no heavy mapping dependency. It maps source keys to constructor
+parameters by name, recurses into nested DTOs, hydrates backed enums, and maps lists of
+DTOs via the `#[ListOf]` attribute.
+
+```php
+use DiamondDove\SimpleJson\Json;
+use DiamondDove\SimpleJson\Mapping\Attributes\ListOf;
+
+enum Status: string {
+    case Active = 'active';
+    case Inactive = 'inactive';
+}
+
+final class Address {
+    public function __construct(
+        public readonly string $city,
+        public readonly ?string $zip = null,
+    ) {}
+}
+
+final class Tag {
+    public function __construct(public readonly string $label) {}
+}
+
+final class User {
+    public function __construct(
+        public readonly string $name,
+        public readonly int $age,
+        public readonly ?Address $address = null,            // nested DTO
+        public readonly Status $status = Status::Active,     // backed enum
+        #[ListOf(Tag::class)] public readonly array $tags = [], // list of DTOs
+    ) {}
+}
+
+$user = Json::map('{
+    "name": "Ana", "age": 30,
+    "address": {"city": "Santo Domingo"},
+    "status": "active",
+    "tags": [{"label": "vip"}, {"label": "beta"}]
+}', User::class);
+
+$user->address->city;   // 'Santo Domingo'
+$user->status;          // Status::Active
+$user->tags[0]->label;  // 'vip'
+```
+
+Mapping is **strict**, mirroring the rest of the toolkit: a type mismatch, a missing
+required parameter, or an invalid enum value throws a
+`DiamondDove\SimpleJson\Exceptions\JsonMappingException` (which also implements the
+`JsonException` marker, so a thrown DTO-constructor exception is wrapped and chained as
+`$previous`). Extra source keys are ignored.
+
+Because `Json::map()` also accepts a decoded array, it composes directly with the streaming
+reader — hydrate every row of a huge file into typed objects without loading the whole file:
+
+```php
+use DiamondDove\SimpleJson\SimpleJsonReader;
+
+SimpleJsonReader::create('users.json')->get()
+    ->map(fn (array $row) => Json::map($row, User::class))
+    ->each(function (User $user) {
+        // strongly-typed, one row at a time, low memory
+    });
+```
+
 # Testing
 ```sh
 composer test       # run the test suite
