@@ -136,9 +136,81 @@ SimpleJsonWriter::create($this->pathToJson)
                         ]);
 ```
 
-## JSON toolkit (`path()`)
+# In-memory JSON toolkit
+
+Besides streaming whole files, the package ships a small, framework-agnostic toolkit
+for working with a single JSON document in memory: safe parsing, dot-path access with
+strict typed extraction, and validation — all via the static `Json` facade, with zero
+extra dependencies.
+
+## Safe parsing & typed access
+
+`Json::parse()` decodes with `JSON_THROW_ON_ERROR` and, on malformed JSON, throws a
+`DiamondDove\SimpleJson\Exceptions\InvalidJsonException` (the native `JsonException` is
+chained as `$previous`) — so you never have to second-guess `json_decode()`'s ambiguous
+`null` return. Use `Json::tryParse()` for a `null`-on-failure variant that never throws.
+
+```php
+use DiamondDove\SimpleJson\Json;
+
+$json = '{"user": {"name": "Ana", "age": 30, "address": {"city": "Santo Domingo"}}}';
+
+$city = Json::parse($json)->path('user.address.city')->string();   // 'Santo Domingo'
+$age  = Json::parse($json)->path('user.age')->int();               // 30
+
+// Exception-free
+$accessor = Json::tryParse($maybeJson);   // null when the JSON is invalid
+```
+
+`path()` walks dot-notation (case-sensitive) and returns another accessor. The typed
+terminals come in three flavours:
+
+```php
+$user = Json::parse($json)->path('user');
+
+$user->path('name')->string();          // strict: throws JsonTypeException on a type mismatch
+$user->path('age')->int();              // strict int (rejects 30.0 and "30")
+$user->path('nickname')->stringOr('—'); // lenient: returns the default when missing/mismatched
+$user->path('nickname')->stringOrNull();// lenient: returns null when missing/mismatched
+$user->path('age')->isPresent();        // true — distinguishes a present null from a missing key
+```
+
+Terminals are **strict — no silent coercion**: `int` requires a real integer, `float`
+widens an integer to float (`5` → `5.0`), `bool` rejects `0`/`1`. The full set is
+`string`, `int`, `float`, `bool`, `array`, each with `*Or($default)` and `*OrNull()`
+variants.
 
 > **Limitation:** `path()` uses dot-notation; a JSON key that contains a literal dot (e.g. `"weird.key"`) is matched as a whole key first by the underlying resolver, while a genuinely nested `{"weird":{"key":...}}` is what dot-segmentation targets — avoid literal dots in keys you intend to traverse.
+
+## Validation
+
+`Json::validate()` checks a JSON document against Laravel-style rules using a tiny
+in-house engine — **no `illuminate/validation`** and no other new dependency. Rules are
+written as pipe strings or arrays, and fields are addressed with the same dot-notation as
+`path()`.
+
+```php
+use DiamondDove\SimpleJson\Json;
+
+$result = Json::validate('{"email": "ana@example.com", "age": 30}', [
+    'email'     => 'required|email',
+    'age'       => 'int|min:18',
+    'user.name' => 'required|string',   // dot-notation, case-sensitive
+    'tags'      => ['nullable', 'array'],
+]);
+
+$result->passes();     // bool
+$result->fails();      // bool
+$result->errors();     // ['user.name' => ['The user.name field is required.']]
+$result->validated();  // array of validated fields; throws JsonValidationException on failure
+```
+
+Supported rules: `required`, `nullable`, `string`, `int`, `numeric`, `bool`, `array`,
+`email`, `min`, `max`, `between`, `in`, `regex`. Type rules are **strict** (consistent
+with the accessor): `int`/`numeric` reject numeric strings, `bool` rejects `0`/`1`.
+`min`/`max`/`between` are inclusive and type-aware (number magnitude, string length, or
+array count). An unknown rule or a missing rule parameter throws `\InvalidArgumentException`
+(it's a programming error, not a validation failure).
 
 # Testing
 ```sh
