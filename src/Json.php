@@ -3,6 +3,8 @@
 namespace DiamondDove\SimpleJson;
 
 use DiamondDove\SimpleJson\Exceptions\InvalidJsonException;
+use DiamondDove\SimpleJson\Exceptions\JsonMappingException;
+use DiamondDove\SimpleJson\Mapping\ObjectMapper;
 use DiamondDove\SimpleJson\Validation\ValidationResult;
 use DiamondDove\SimpleJson\Validation\Validator;
 
@@ -49,5 +51,26 @@ final class Json
     public static function validate(string $json, array $rules): ValidationResult
     {
         return (new Validator($rules))->validate(self::parse($json));
+    }
+
+    /**
+     * Hydrate a DTO from decoded JSON data or a raw JSON string. A string source
+     * is parsed first (malformed JSON raises an InvalidJsonException), then the
+     * decoded value is mapped onto the constructor of $className by parameter name.
+     *
+     * @template T of object
+     *
+     * @param  array<array-key, mixed>|string  $source
+     * @param  class-string<T>  $className
+     * @return T
+     *
+     * @throws InvalidJsonException when a string source is not valid JSON
+     * @throws JsonMappingException when the data cannot be mapped onto $className
+     */
+    public static function map(array|string $source, string $className): object
+    {
+        $data = is_string($source) ? self::parse($source)->value() : $source;
+
+        return (new ObjectMapper())->map($data, $className);
     }
 }
