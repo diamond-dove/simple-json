@@ -3,6 +3,8 @@
 namespace DiamondDove\SimpleJson\Tests;
 
 use DiamondDove\SimpleJson\SimpleJsonReader;
+use DiamondDove\SimpleJson\SimpleJsonWriter;
+use Spatie\TemporaryDirectory\TemporaryDirectory;
 
 class SimpleJsonReaderTest extends TestCase
 {
@@ -53,5 +55,54 @@ class SimpleJsonReaderTest extends TestCase
         $expectedFileName = $this->getBaseName($this->getPath('users.json'));
 
         $this->assertEquals($expectedFileName, $this->jsonReader->getFile());
+    }
+
+    public function testStreamedContentMatchesFileGetContents(): void
+    {
+        $path = $this->getPath('users.json');
+
+        $expected = json_decode(file_get_contents($path), true);
+        $actual = (new SimpleJsonReader($path))->get()->toArray();
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testStreamingUsesLessMemoryThanFileGetContents(): void
+    {
+        $temporaryDirectory = (new TemporaryDirectory(__DIR__ . '/temp'))->empty();
+        $path = $temporaryDirectory->path('large.json');
+
+        $writer = SimpleJsonWriter::create($path);
+        for ($i = 0; $i < 5000; $i++) {
+            $writer->push([
+                'id'    => $i,
+                'name'  => "User {$i}",
+                'email' => "user{$i}@example.com",
+            ]);
+        }
+        // Force the writer to flush the closing bracket so the file is valid JSON.
+        unset($writer);
+
+        // Baseline: decode the whole file into memory at once.
+        gc_collect_cycles();
+        $before = memory_get_usage();
+        $whole = json_decode(file_get_contents($path), true);
+        $fileGetContentsUsage = memory_get_usage() - $before;
+        $this->assertCount(5000, $whole);
+        unset($whole);
+
+        // Streaming: process one item at a time, never holding the full set.
+        gc_collect_cycles();
+        $before = memory_get_usage();
+        $count = 0;
+        (new SimpleJsonReader($path))->get()->each(function (array $item) use (&$count) {
+            $count++;
+        });
+        $streamedUsage = memory_get_usage() - $before;
+
+        $this->assertSame(5000, $count);
+        $this->assertLessThan($fileGetContentsUsage, $streamedUsage);
+
+        $temporaryDirectory->delete();
     }
 }

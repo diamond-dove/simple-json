@@ -16,13 +16,14 @@ class JsonWriter implements WriterInterface
         $this->writer = new JsonCollectionStreamWriter($path);
     }
 
-    /**
-     * @throws \Exception
-     */
     public function push(object|array $record): bool
     {
-        $this->writer->push($record);
+        try {
+            $this->writer->push($record);
 
-        return true;
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }
