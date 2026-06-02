@@ -136,6 +136,10 @@ SimpleJsonWriter::create($this->pathToJson)
                         ]);
 ```
 
+## JSON toolkit (`path()`)
+
+> **Limitation:** `path()` uses dot-notation; a JSON key that contains a literal dot (e.g. `"weird.key"`) is matched as a whole key first by the underlying resolver, while a genuinely nested `{"weird":{"key":...}}` is what dot-segmentation targets — avoid literal dots in keys you intend to traverse.
+
 # Testing
 ```sh
 composer test       # run the test suite

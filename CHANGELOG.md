@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- In-memory JSON toolkit (Phase 1): a static `Json` facade with `Json::parse()` (throws `InvalidJsonException` on malformed JSON) and `Json::tryParse()` (returns `null`), returning an immutable `JsonAccessor` with case-sensitive dot-notation `path()`, `isPresent()`, and strict / `*Or($default)` / `*OrNull()` typed terminals (`string`, `int`, `float`, `bool`, `array`) with no silent coercion. Zero new dependencies.
 - `SimpleJsonReader::createFromString()` and `SimpleJsonReader::createFromResource()` for reading a JSON collection from an in-memory string or an already-open stream, in addition to a file path.
 - GitHub Actions workflows for tests (lowest/highest dependencies) and code quality (PHPStan + PHP CS Fixer).
 - PHPStan (level 6) and PHP CS Fixer configuration, plus `composer analyse` / `composer format` scripts.
