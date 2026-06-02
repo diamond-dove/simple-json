@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- In-memory JSON toolkit (Phase 2): `Json::validate(string $json, array $rules): ValidationResult` — a dependency-free, in-house rule engine with Laravel-style pipe/array rule strings (`required`, `nullable`, `string`, `int`, `numeric`, `bool`, `array`, `email`, `min`, `max`, `between`, `in`, `regex`), strict type semantics (no coercion, consistent with Phase 1), dot-notation field addressing, and human-readable per-field errors. `ValidationResult` exposes `passes()`/`fails()`/`errors()`/`validated()` (the last throws `JsonValidationException` on failure). No `illuminate/validation` dependency.
 - In-memory JSON toolkit (Phase 1): a static `Json` facade with `Json::parse()` (throws `InvalidJsonException` on malformed JSON) and `Json::tryParse()` (returns `null`), returning an immutable `JsonAccessor` with case-sensitive dot-notation `path()`, `isPresent()`, and strict / `*Or($default)` / `*OrNull()` typed terminals (`string`, `int`, `float`, `bool`, `array`) with no silent coercion. Zero new dependencies.
 - `SimpleJsonReader::createFromString()` and `SimpleJsonReader::createFromResource()` for reading a JSON collection from an in-memory string or an already-open stream, in addition to a file path.
 - GitHub Actions workflows for tests (lowest/highest dependencies) and code quality (PHPStan + PHP CS Fixer).
