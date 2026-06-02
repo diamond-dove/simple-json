@@ -3,6 +3,8 @@
 namespace DiamondDove\SimpleJson\Tests;
 
 use DiamondDove\SimpleJson\SimpleJsonWriter;
+use DiamondDove\SimpleJson\Writer\JsonCollectionStreamWriter;
+use DiamondDove\SimpleJson\Writer\JsonWriter;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 use Spatie\Snapshots\MatchesSnapshots;
 
@@ -47,5 +49,23 @@ class SimpleJsonWriterTest extends TestCase
                         ]);
 
         $this->assertMatchesFileSnapshot($this->pathToJson);
+    }
+
+    public function testPushReturnsFalseWhenTheUnderlyingWriteFails(): void
+    {
+        $writer = new JsonWriter($this->pathToJson);
+
+        // Simulate a write that blows up mid-insert (e.g. a full disk).
+        $failingStreamWriter = new class ($this->pathToJson) extends JsonCollectionStreamWriter {
+            public function push(object|array $item): void
+            {
+                throw new \RuntimeException('write failed');
+            }
+        };
+
+        $property = new \ReflectionProperty(JsonWriter::class, 'writer');
+        $property->setValue($writer, $failingStreamWriter);
+
+        $this->assertFalse($writer->push(['first_name' => 'john']));
     }
 }

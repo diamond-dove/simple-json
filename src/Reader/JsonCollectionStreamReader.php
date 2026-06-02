@@ -57,7 +57,7 @@ class JsonCollectionStreamReader
 
         $start = 0;
         $keepFrom = 0;
-        $yielded = 0;
+        $itemInProgress = false;
 
         // We want to iterate over chars but since,
         // we can have multibyte strings we can't access them by position alone
@@ -66,6 +66,7 @@ class JsonCollectionStreamReader
         foreach ($split as $position => $char) {
             // Start of the collection
             if ($this->nestingLevel === 0 && $char === self::START_OF_COLLECTION) {
+                $keepFrom = $position + 1;
                 continue;
             }
 
@@ -79,6 +80,7 @@ class JsonCollectionStreamReader
                 // Definitely start of the item
                 if ($this->nestingLevel === 0) {
                     $start = $position;
+                    $itemInProgress = true;
                 }
 
                 $this->nestingLevel++;
@@ -88,21 +90,23 @@ class JsonCollectionStreamReader
 
                 // Definitely end of the item
                 if ($this->nestingLevel === 0) {
-                    $keepFrom = $position + 1;
-
                     yield json_decode(
                         mb_substr($this->buffer, $start, $position - $start + 1),
                         $this->asArray
                     );
 
-                    $yielded++;
+                    $keepFrom = $position + 1;
+                    $itemInProgress = false;
                 }
             }
         }
 
-        // If we don't reset nesting level when current buffer hasn't yielded any items,
-        // we'll never reach 0 and won't be able to read items from next chunks.
-        if ($yielded === 0) {
+        // We ran out of buffer in the middle of an item. Retain that item from its
+        // opening brace and reset nesting so the next chunk re-parses it cleanly —
+        // otherwise the brace would be counted twice and the depth would desync,
+        // silently dropping every item after the first chunk boundary.
+        if ($itemInProgress) {
+            $keepFrom = $start;
             $this->nestingLevel = 0;
         }
 
